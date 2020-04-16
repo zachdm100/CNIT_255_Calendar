@@ -15,6 +15,10 @@ public class CalendarGUI extends Frame {
     CalendarSetup calSetup = new CalendarSetup();       // New implementation to setup initial calendar in GUI
     UpdateCalendar calUpdate = new UpdateCalendar();    // New implementation to maintain and update calendar in GUI
 
+    // Values of starting month and year
+    String startingMonth = calSetup.getMonth();
+    int startingYear = calSetup.getYear();
+
     // Create dynamic elements of GUI (Outside of constructor scope to allow access to other methods)
     JLabel lblMonth = new JLabel(calSetup.getMonth(), SwingConstants.CENTER);      // Create Month Label
     JLabel lblYear = new JLabel(String.valueOf(calSetup.getYear()));               // Create Year Label
@@ -162,12 +166,24 @@ public class CalendarGUI extends Frame {
             buttons[x] = new JButton(String.valueOf(x + 1)); // Start button dates at 1 instead of 0
             calDates.add(buttons[x]); // Add the button to the dates panel
         }
+        // Highlight the current day
+        if (calUpdate.getMonth().equals(startingMonth) && calUpdate.getYear() == startingYear) { highlightCurrentDay(buttons); }
     }
 
     // Method to set the current month and year of the main calendar
     public void setMonthYear() {
         lblMonth.setText(calUpdate.getMonth()); // Set text of month label to current month
         lblYear.setText(String.valueOf(calUpdate.getYear())); // Set text of year label to current year
+    }
+
+    // Method for finding the current date time and highlighting the current day
+    public void highlightCurrentDay(JButton[] dates) {
+        String currTime = String.valueOf(calSetup.regCal.getTime()); // convert current date to string
+        String currDay = currTime.replaceAll(".* (\\d+) .*", "$1"); // regex to find only day of month
+        int currCalDay = Integer.parseInt(currDay) - 1; // subtract 1 for array value to match actual day
+        dates[currCalDay].setBackground(Color.RED); // set background color
+        dates[currCalDay].setForeground(Color.white); // Set text color
+        //System.out.println(currDay);
     }
 
     // RUN MAIN
