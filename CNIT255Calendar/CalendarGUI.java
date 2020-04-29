@@ -1,9 +1,11 @@
 package CNIT255Calendar;
 
+import CNIT255Calendar.Appointment;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 /*
 Class for the calendar GUI. Uses CalendarSetup to get initial Calendar data and CalendarUpdate to get current month/year
@@ -11,6 +13,10 @@ when user interacts with month or year buttons.
 */
 public class CalendarGUI extends Frame {
 
+    //add arraylist for appointments    
+    ArrayList<ApptItem> Appointments;
+    
+    
     // Create new instances of calendars
     CalendarSetup calSetup = new CalendarSetup();       // New implementation to setup initial calendar in GUI
     UpdateCalendar calUpdate = new UpdateCalendar();    // New implementation to maintain and update calendar in GUI
@@ -26,6 +32,11 @@ public class CalendarGUI extends Frame {
 
     // GUI Constructor (Initialize and modify all GUI elements)
     public CalendarGUI() {
+        
+        //init appointments arraylist
+        Appointments = new ArrayList<ApptItem>();
+        
+        
         // Build Root Window
         JFrame frame = new JFrame("Calendar"); // Main frame where main panels are added to
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -162,8 +173,15 @@ public class CalendarGUI extends Frame {
             calDates.add(emptyDates[x]); // Add the label to the dates panel
         }
         JButton[] buttons = new JButton[31]; // Create an array of buttons for the actual dates (visible)
+        
+        // Add action listener for buttons
+        ActionListener listener = new ButtonListener();
+        
         for (int x = 0; x < calUpdate.getDays(); x++) { // Create a grid of buttons for the length of the month
             buttons[x] = new JButton(String.valueOf(x + 1)); // Start button dates at 1 instead of 0
+            
+            // Add listener
+            buttons[x].addActionListener(listener);
             calDates.add(buttons[x]); // Add the button to the dates panel
         }
         // Highlight the current day
@@ -186,6 +204,70 @@ public class CalendarGUI extends Frame {
         //System.out.println(currDay);
     }
 
+    
+    
+    // Action listener for buttons
+    private class ButtonListener implements ActionListener
+    {
+        
+        @Override
+        public void actionPerformed(ActionEvent action)
+        {
+            // Get the source button
+            JButton button = (JButton)action.getSource();
+            String cday = button.getText(); // Save day text
+            
+            
+            //** See if there are any appointments
+            // Check if any appointments for today
+            if(AppointmentsToday(Integer.parseInt(cday)))
+            {
+                    // Show Appointment list dialog
+                    // Show new appointment dialog
+                    AppointmentList apptListForm = new AppointmentList(CalendarGUI.this, true, Appointments, 
+                            Integer.parseInt(cday), calUpdate.getMonth(), calUpdate.getYear());
+                    apptListForm.setVisible(true);
+                    apptListForm.dispose();
+            }
+            else
+            {
+                // No appointments for today, so add a new one
+                // Show new appointment dialog
+                Appointment apptForm = new Appointment(CalendarGUI.this, true, Integer.parseInt(cday), calUpdate.getMonth(), calUpdate.getYear());
+                apptForm.setVisible(true);
+            
+                if(apptForm.Saved)
+                {
+                    // Create new entry to the appointments list
+                    Appointments.add(new ApptItem(apptForm.title, cday, calUpdate.getMonth(), 
+                                        String.valueOf(calUpdate.getYear())));
+                }
+                
+                apptForm.dispose(); // delete the dialog obj
+            }
+             
+        }
+        
+    }    
+        
+    private boolean AppointmentsToday(int today)
+    {
+        for(ApptItem a: Appointments)
+        {
+            if(Integer.parseInt(a.day) == today) 
+              if(a.month.compareTo(calUpdate.getMonth()) == 0)
+                if(Integer.parseInt(a.year) == calUpdate.getYear())
+                    return true;
+                    
+        }
+        return false;
+    }
+
+    public static void PrintTitle(String t)
+    {
+        System.out.println(t);
+    }
+    
     // RUN MAIN
     public static void main (String[] args)
     {
